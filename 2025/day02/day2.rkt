@@ -29,7 +29,7 @@
          [second-half (substring num-str prefix-len)]
          [first-half-num (string->number first-half)]
          [second-half-num (string->number second-half)])
-    (displayln (format "  num-str: ~a.  prefix-len: ~a.  first-half: ~a.  second-half: ~a" num-str prefix-len first-half second-half))
+    ;;(displayln (format "  num-str: ~a.  prefix-len: ~a.  first-half: ~a.  second-half: ~a" num-str prefix-len first-half second-half))
     (if (> second-half-num first-half-num)
       first-half
       (number->string (- first-half-num 1)))))
@@ -38,6 +38,7 @@
   (let* ([set-size (+ 1 (- (string->number last-prefix) (string->number first-prefix)))]
          [first-num (string->number (string-append first-prefix first-prefix))]
          [last-num (string->number (string-append last-prefix last-prefix))])
+    (displayln (format "  set-size ~a.  first-num ~a.  last-num ~a." set-size first-num last-num))
     (* set-size (/ (+ first-num last-num) 2))))
 
 (define (find-invalid-values-sum range)
@@ -87,5 +88,5 @@
 (define string-input (read-input input-filename))
 (define number-input (parse-input string-input))
 
-(displayln (format "Part 1 Solution: ~a" (solve-part1 single-string-input)))
-(displayln (format "Part 2 Solution: ~a" (solve-part2 single-string-input)))
+(displayln (format "Part 1 Solution: ~a" (solve-part1 (car string-input))))
+(displayln (format "Part 2 Solution: ~a" (solve-part2 (car string-input))))
