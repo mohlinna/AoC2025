@@ -34,18 +34,17 @@
     1
     0))
     
-(define (tally-row-loop input-row vector-grid row column tally num-rows num-columns)
-  (if (empty? input-row)
-    tally
+(define (tally-row-loop vector-grid row column tally num-rows num-columns)
+  (if (< column num-columns)
     (let ([point (point-value vector-grid row column num-rows num-columns)])
-    (tally-row-loop (cdr input-row) vector-grid row (+ 1 column) (+ tally point) num-rows num-columns))))
+      (tally-row-loop vector-grid row (+ 1 column) (+ tally point) num-rows num-columns))
+    tally))
     
-    
-(define (part1-loop input vector-grid row tally num-rows num-columns)
-  (if (empty? input)
-    tally
-    (let ([row-tally (tally-row-loop (string->list (car input)) vector-grid row 0 0 num-rows num-columns)])
-      (part1-loop (cdr input) vector-grid (+ 1 row) (+ tally row-tally) num-rows num-columns))))
+(define (part1-loop vector-grid row tally num-rows num-columns)
+  (if (< row num-rows)
+    (let ([row-tally (tally-row-loop vector-grid row 0 0 num-rows num-columns)])
+      (part1-loop vector-grid (+ 1 row) (+ tally row-tally) num-rows num-columns))
+    tally))
 
 (define (solve-part1 input)
   ;; Implement logic for Part 1
@@ -53,15 +52,50 @@
   (let ([numRows (length input)]
         [numColumns (string-length (car input))]
         [vector-grid (list->vector (map (lambda (x) (list->vector (string->list x))) input))])
-    (displayln (format "  numRows: ~a  numColumns: ~a" numRows numColumns))
-    (part1-loop input vector-grid 0 0 numRows numColumns)))
+    (part1-loop vector-grid 0 0 numRows numColumns)))
 
 ;; --- Part 2 ---
-(define (solve-part2 parsed-input)
+(define (find-removable-rolls-in-row vector-grid row column roll-list num-rows num-columns)
+  (if (< column num-columns)
+    (if (is-accessible-roll? vector-grid row column num-rows num-columns)
+      (find-removable-rolls-in-row vector-grid row (+ 1 column) (cons (cons row column) roll-list) num-rows num-columns)
+      (find-removable-rolls-in-row vector-grid row (+ 1 column) roll-list num-rows num-columns))
+    roll-list))
+
+(define (find-removable-rolls vector-grid row roll-list num-rows num-columns)
+  (if (< row num-rows)
+    (let ([row-rolls(find-removable-rolls-in-row  vector-grid row 0 roll-list num-rows num-columns)])
+      (find-removable-rolls vector-grid (+ 1 row) row-rolls num-rows num-columns))
+    roll-list))
+
+(define (is-accessible-roll? vector-grid row column num-rows num-columns)
+  (and (contains-roll? vector-grid row column)
+       (< (surrounding-rolls vector-grid row column num-rows num-columns) 4)))
+
+(define (remove-roll! vector-grid row column)
+  (vector-set! (vector-ref vector-grid row) column #\R))
+  
+(define (remove-rolls vector-grid roll-list)
+  (if (empty? roll-list)
+    vector-grid
+    (let ([roll (car roll-list)])
+      (remove-roll! vector-grid (car roll) (cdr roll))
+      (remove-rolls vector-grid (cdr roll-list)))))
+
+(define (part2-loop vector-grid tally num-rows num-columns)
+  (let ([removable-rolls (find-removable-rolls vector-grid 0 '() num-rows num-columns)])
+    (if (empty? removable-rolls)
+      tally
+      (let ([new-grid (remove-rolls vector-grid removable-rolls)])
+        (part2-loop new-grid (+ tally (length removable-rolls)) num-rows num-columns)))))
+
+(define (solve-part2 input)
   ;; Implement logic for Part 2
   (displayln "Solving Part 2...")
-  2)
-  ;;(print read))
+  (let ([numRows (length input)]
+        [numColumns (string-length (car input))]
+        [vector-grid (list->vector (map (lambda (x) (list->vector (string->list x))) input))])
+    (part2-loop vector-grid 0 numRows numColumns)))
 
 ;; --- Main Execution ---
 (define input-filename "input")
